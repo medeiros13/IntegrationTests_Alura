@@ -2,6 +2,7 @@
 using Alura.CoisasAFazer.WebApp.Models;
 using Alura.CoisasAFazer.Core.Commands;
 using Alura.CoisasAFazer.Services.Handlers;
+using Alura.CoisasAFazer.Infrastructure;
 
 namespace Alura.CoisasAFazer.WebApp.Controllers
 {
@@ -12,15 +13,17 @@ namespace Alura.CoisasAFazer.WebApp.Controllers
         [HttpPost]
         public IActionResult EndpointCadastraTarefa(CadastraTarefaVM model)
         {
+            var context = new DbTarefasContext();
+            var repositorio = new RepositorioTarefa(context);
             var cmdObtemCateg = new ObtemCategoriaPorId(model.IdCategoria);
-            var categoria = new ObtemCategoriaPorIdHandler().Execute(cmdObtemCateg);
+            var categoria = new ObtemCategoriaPorIdHandler(repositorio).Execute(cmdObtemCateg);
             if (categoria == null)
             {
                 return NotFound("Categoria não encontrada");
             }
 
             var comando = new CadastraTarefa(model.Titulo, categoria, model.Prazo);
-            var handler = new CadastraTarefaHandler();
+            var handler = new CadastraTarefaHandler(repositorio);
             handler.Execute(comando);
             return Ok();
         }
